@@ -10,7 +10,7 @@ app.get('/', function(request, response) {
 
 if (require.main === module) {
   app.listen(app.get('port'), function() {
-    console.log("Node app is running at localhost port:" + app.get('port'));
+    console.log("Node app is running at localhost:" + app.get('port'));
   });
 } else {
   module.exports = app;

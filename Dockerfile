@@ -1,5 +1,6 @@
 FROM node:14
 
+MAINTAINER SAMUEL Campos
 # Set the working directory in the container
 WORKDIR /
 
