@@ -2,8 +2,8 @@
 apiVersion: v1 
 kind: Service
 metadata:
-  name: my-service
-  namespace: my-deployment
+  name: nodejs-sample-service
+  namespace: nodejs-sample
 spec:
   selector:
     app: Node.js

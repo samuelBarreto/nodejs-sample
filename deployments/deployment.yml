@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
-  namespace: my-deployment
+  name: nodejs-sample
+  namespace: nodejs-sample
 spec:
   replicas: 10
   selector:
     matchLabels:
-      app: my-deployment
+      app: nodejs-sample
   template:
     metadata:
       labels:
-        app: my-deployment
+        app: nodejs-sample
     spec:
       containers:
-        - name: my-app-container
-          image: 
+        - name: nodejs-sample
+          image: 1234samue/nodejs-sample:1
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
