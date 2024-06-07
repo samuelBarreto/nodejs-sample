@@ -6,6 +6,10 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - 'index.js'
+      - 'package.json'
+      - 'Dockerfile'
 
 jobs:
   build-and-deploy:
