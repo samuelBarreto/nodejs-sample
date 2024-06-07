@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   build-and-deploy:
@@ -32,17 +33,20 @@ jobs:
         run: echo "GITHUB_BRANCH=$(echo $GITHUB_REF_NAME-$GITHUB_SHA)" >> $GITHUB_ENV  
  
       - name: Build Docker image
+        if: github.ref == 'refs/heads/main'
         run: |
           docker buildx create --use
           docker buildx inspect default --bootstrap
           docker buildx build --file Dockerfile -t 1234samue/nodejs-sample:$GITHUB_REF_NAME-$GITHUB_SHA --load .
 
       - name: Push Docker image to Docker Hub
+        if: github.ref == 'refs/heads/main'
         run: |
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username 1234samue --password-stdin
           docker push 1234samue/nodejs-sample:$GITHUB_REF_NAME-$GITHUB_SHA
 
       - name: Update manifest file
+        if: github.ref == 'refs/heads/main'
         run: |    
           # Assuming you have a manifest file named k8s.yaml
           git config user.name "$GITHUB_ACTOR"
