@@ -35,9 +35,9 @@ jobs:
         run: |    
           # Assuming you have a manifest file named k8s.yaml
           git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@gmail.com"
+          git config user.email "samukacfc1@gmail.com"
           yq eval '.spec.template.spec.containers[0].image = "1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}"' -i deployments/deployment.yml
           
           git add .
-          git commit -m "updating newer image"
-          git push --set-upstream origin master
+          git commit -m "updating newer image 1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}"
+          git push --set-upstream origin main
