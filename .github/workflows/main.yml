@@ -86,3 +86,7 @@ jobs:
             - Docker image: 1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to Production
+        environment: production
+        run: echo "Deploying to production environment"
