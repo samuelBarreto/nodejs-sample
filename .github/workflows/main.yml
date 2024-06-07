@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - dev
     types:
       - closed
 
@@ -23,10 +22,12 @@ jobs:
         id: file_changes
         run: |
           git fetch origin main
-          git diff --name-only HEAD^ HEAD | grep -E '^(index.js|package.json|Dockerfile)$' || echo "no-changes" > no_changes
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "$CHANGED_FILES" > changed_files.txt
+          echo "::set-output name=result::$(echo $CHANGED_FILES | grep -E '^(index.js|package.json|Dockerfile)$')"
 
       - name: Stop if no changes in specific files
-        if: steps.file_changes.outputs.result == 'no-changes'
+        if: steps.file_changes.outputs.result == ''
         run: exit 0
 
       - name: Set up Node.js
