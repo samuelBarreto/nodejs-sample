@@ -1,13 +1,17 @@
-var express = require('express')
-var app = express()
+var express = require('express');
+var app = express();
 
-app.set('port', (process.env.PORT || 8000))
-app.use(express.static(__dirname + '/public'))
+app.set('port', (process.env.PORT || 8000));
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(request, response) {
-  response.send('Hello World DevOpsoooo!')
-})
+  response.send('Hello World DevOpsoooo!');
+});
 
-app.listen(app.get('port'), function() {
-  console.log("Node app is running at localhost:" + app.get('port'))
-})
+if (require.main === module) {
+  app.listen(app.get('port'), function() {
+    console.log("Node app is running at localhost:" + app.get('port'));
+  });
+} else {
+  module.exports = app;
+}
