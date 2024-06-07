@@ -1,23 +1,32 @@
-
-name: node dependencies, test ,Build-Docker, Push-Docker, and Deploy
+name: Build, Push, Deploy, and Release
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - dev
-    paths:
-      - 'index.js'
-      - 'package.json'
-      - 'Dockerfile'
+    types:
+      - closed
 
 jobs:
   build-and-deploy:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'dev'
     runs-on: ubuntu-latest
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Check for changes in specific files
+        id: file_changes
+        run: |
+          git fetch origin main
+          git diff --name-only HEAD^ HEAD | grep -E '^(index.js|package.json|Dockerfile)$' || echo "no-changes" > no_changes
+
+      - name: Stop if no changes in specific files
+        if: steps.file_changes.outputs.result == 'no-changes'
+        run: exit 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -40,22 +49,19 @@ jobs:
 
       - name: Set env
         run: echo "GITHUB_BRANCH=$(echo $GITHUB_REF_NAME-$GITHUB_SHA)" >> $GITHUB_ENV  
- 
+
       - name: Build Docker image
-        if: github.ref == 'refs/heads/main'
         run: |
           docker buildx create --use
           docker buildx inspect default --bootstrap
           docker buildx build --file Dockerfile -t 1234samue/nodejs-sample:$GITHUB_REF_NAME-$GITHUB_SHA --load .
 
       - name: Push Docker image to Docker Hub
-        if: github.ref == 'refs/heads/main'
         run: |
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username 1234samue --password-stdin
           docker push 1234samue/nodejs-sample:$GITHUB_REF_NAME-$GITHUB_SHA
 
       - name: Update manifest file
-        if: github.ref == 'refs/heads/main'
         run: |    
           # Assuming you have a manifest file named k8s.yaml
           git config user.name "$GITHUB_ACTOR"
@@ -65,3 +71,15 @@ jobs:
           git add .
           git commit -m "updating newer image 1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}"
           git push --set-upstream origin main
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.sha }}
+          tag_name: v${{ github.run_number }}
+          body: |
+            Release created from commit ${{ github.sha }}
+            - Node.js version: 14
+            - Docker image: 1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
