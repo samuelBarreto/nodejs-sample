@@ -26,6 +26,11 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Check test results
+        if: failure()
+        run: echo "Tests failed. Stopping the workflow."
+        continue-on-error: false
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
