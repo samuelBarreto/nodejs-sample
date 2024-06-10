@@ -4,7 +4,7 @@ metadata:
   name: nodejs-sample
   namespace: nodejs-sample
 spec:
-  replicas: 10
+  replicas: 1
   selector:
     matchLabels:
       app: nodejs-sample
@@ -18,4 +18,4 @@ spec:
           image: 1234samue/nodejs-sample:main-b02bf90d46b9f836278c430aff6a54e1ba49f816
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
+            - containerPort: 3000
