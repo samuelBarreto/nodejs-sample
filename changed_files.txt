@@ -1,1 +1,4 @@
+Dockerfile
+deployments/deployment.yml
+deployments/service.yml
 index.js
