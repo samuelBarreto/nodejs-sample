@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - dev
     types:
       - closed
 
@@ -63,16 +64,23 @@ jobs:
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username 1234samue --password-stdin
           docker push 1234samue/nodejs-sample:$GITHUB_REF_NAME-$GITHUB_SHA
 
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Update manifest file
         run: |    
-          # Assuming you have a manifest file named k8s.yaml
           git config user.name "$GITHUB_ACTOR"
           git config user.email "samukacfc1@gmail.com"
           yq eval '.spec.template.spec.containers[0].image = "1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}"' -i deployments/deployment.yml
           
-          git add .
+          git add deployments/deployment.yml
           git commit -m "updating newer image 1234samue/nodejs-sample:${{ env.GITHUB_BRANCH }}"
-          git push --set-upstream origin main
+          git push origin main
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -86,10 +94,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
       - name: Deploy to Production
         run: echo "Deploying to production environment"
