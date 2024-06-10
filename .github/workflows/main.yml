@@ -7,6 +7,9 @@ on:
       - dev
     types:
       - closed
+  push:
+     branches:
+      - dev
 
 jobs:
   build-and-deploy:
@@ -39,16 +42,18 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install dependencies
+      - name: Install dependencies (dev and main branch only)
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
         run: npm install
 
-      - name: Run tests
+      - name: Run tests (dev and main branch only)
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
         run: npm test
-
-      - name: Check test results
-        if: failure()
-        run: echo "Tests failed. Stopping the workflow."
-        continue-on-error: false
+      
+      - name: Run Sonar analysis
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        run: npm run sonar
+        continue-on-error: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
