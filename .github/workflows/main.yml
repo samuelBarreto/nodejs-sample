@@ -13,9 +13,7 @@ on:
 
 jobs:
   build-and-test:
-    if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: BRJ224Z266
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -55,7 +53,7 @@ jobs:
     
   docker-image:
     needs: build-and-test
-    runs-on: BRJ224Z266
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     outputs:
       docker_image_tag: ${{ steps.build_docker_image.outputs.docker_image_tag }}
@@ -88,7 +86,7 @@ jobs:
 
   deploy:
     needs: docker-image
-    runs-on: BRJ224Z266
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     environment: production
     steps:
