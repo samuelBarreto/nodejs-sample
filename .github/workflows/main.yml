@@ -8,12 +8,14 @@ on:
     types:
       - closed
   push:
-     branches:
+    branches:
       - dev
 
 jobs:
   build-and-deploy:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'dev'
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'dev') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev')
     runs-on: ubuntu-latest
 
     outputs:
@@ -42,16 +44,16 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install dependencies (dev and main branch only)
-        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+      - name: Install dependencies (dev branch only)
+        if: github.ref == 'refs/heads/dev'
         run: npm install
 
-      - name: Run tests (dev and main branch only)
-        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+      - name: Run tests (dev branch only)
+        if: github.ref == 'refs/heads/dev'
         run: npm test
-      
+
       - name: Run Sonar analysis
-        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/dev'
         run: npm run sonar
         continue-on-error: true
 
