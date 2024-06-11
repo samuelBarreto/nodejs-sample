@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: nodejs-sample
-          image: '1234samue/nodejs-sample:main-1078ddc53de08128ec320be9a514a98db60d393a'
+          image: '1234samue/nodejs-sample:main-b0435d801b46aca186368221c6b7f7645458faca'
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
