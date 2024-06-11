@@ -53,15 +53,17 @@ jobs:
         if: github.ref == 'refs/heads/dev'
         run: npm run sonar
         continue-on-error: true
-
+    
   docker-image:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    outputs:
+      docker_image_tag: ${{ steps.build_docker_image.outputs.docker_image_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -119,3 +121,4 @@ jobs:
 
       - name: Deploy to Production
         run: echo "Deploying to production environment"
+
