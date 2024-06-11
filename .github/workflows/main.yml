@@ -1,4 +1,4 @@
-name: Build, Push, Deploy, and Release
+name: Build, Test, Push, Deploy, and Release
 
 on:
   pull_request:
@@ -7,14 +7,16 @@ on:
       - dev
     types:
       - closed
+  push:
+    branches:
+      - dev
 
 jobs:
-  build-and-deploy:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'dev'
+  build-and-test:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'dev') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev')
     runs-on: ubuntu-latest
-
-    outputs:
-      docker_image_tag: ${{ steps.build_docker_image.outputs.docker_image_tag }}
 
     steps:
       - name: Checkout code
@@ -39,16 +41,26 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install dependencies
+      - name: Install dependencies (dev branch only)
+        if: github.ref == 'refs/heads/dev'
         run: npm install
 
-      - name: Run tests
+      - name: Run tests (dev branch only)
+        if: github.ref == 'refs/heads/dev'
         run: npm test
 
-      - name: Check test results
-        if: failure()
-        run: echo "Tests failed. Stopping the workflow."
-        continue-on-error: false
+      - name: Run Sonar analysis
+        if: github.ref == 'refs/heads/dev'
+        run: npm run sonar
+        continue-on-error: true
+
+  docker-image:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -74,8 +86,9 @@ jobs:
           docker push $IMAGE_TAG
 
   deploy:
-    needs: build-and-deploy
+    needs: docker-image
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     environment: production
     steps:
       - name: Checkout code
@@ -83,7 +96,7 @@ jobs:
 
       - name: Update manifest file
         run: |    
-          IMAGE_TAG=${{ needs.build-and-deploy.outputs.docker_image_tag }}
+          IMAGE_TAG=${{ needs.docker-image.outputs.docker_image_tag }}
           git config user.name "$GITHUB_ACTOR"
           git config user.email "samukacfc1@gmail.com"
           yq eval '.spec.template.spec.containers[0].image = "'$IMAGE_TAG'"' -i deployments/deployment.yml
@@ -100,7 +113,7 @@ jobs:
           body: |
             Release created from commit ${{ github.sha }}
             - Node.js version: 14
-            - Docker image: ${{ needs.build-and-deploy.outputs.docker_image_tag }}
+            - Docker image: $IMAGE_TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
