@@ -8,6 +8,10 @@ app.get('/', function(request, response) {
   response.send('Hello World DevOpsoooo!!');
 });
 
+app.get('/teste', function(request, response) {
+  response.send('Hello World DevOpsoooo!!');
+});
+
 
 if (require.main === module) {
   app.listen(app.get('port'), function() {
