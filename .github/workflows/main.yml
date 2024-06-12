@@ -16,6 +16,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Check for changes in specific files
+        id: file_changes
+        run: |
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "$CHANGED_FILES" > changed_files.txt
+          echo "::set-output name=result::$(echo $CHANGED_FILES | grep -E '^(index.js|package.json|Dockerfile)$')"
+
+      - name: Stop if no changes in specific files
+        if: steps.file_changes.outputs.result == ''
+        run: exit 0
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
