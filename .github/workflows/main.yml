@@ -44,7 +44,7 @@ jobs:
 
       - name: Run tests (dev branch only)
         if: github.ref == 'refs/heads/dev'
-        run: npm test
+        run: npm run test
 
       - name: Run Sonar analysis
         if: github.ref == 'refs/heads/dev'
